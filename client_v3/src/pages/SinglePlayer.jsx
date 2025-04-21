@@ -1,41 +1,41 @@
-import { useEffect, useState, useRef } from 'react';
-import { getRandomCharacter, getCharacterAppearances, generateFeedback } from '../utils/anime';
-import SearchBar from '../components/SearchBar';
-import GuessesTable from '../components/GuessesTable';
-import SettingsPopup from '../components/SettingsPopup';
-import HelpPopup from '../components/HelpPopup';
-import GameEndPopup from '../components/GameEndPopup';
-import SocialLinks from '../components/SocialLinks';
-import GameInfo from '../components/GameInfo';
-import Timer from '../components/Timer';
-import '../styles/game.css';
-import '../styles/SinglePlayer.css';
-import axios from 'axios';
-import { useLocalStorage } from 'usehooks-ts';
+import axios from 'axios'
+import { useEffect, useRef, useState } from 'react'
+import { useLocalStorage } from 'usehooks-ts'
+import GameEndPopup from '../components/GameEndPopup'
+import GameInfo from '../components/GameInfo'
+import GuessesTable from '../components/GuessesTable'
+import HelpPopup from '../components/HelpPopup'
+import SearchBar from '../components/SearchBar'
+import SettingsPopup from '../components/SettingsPopup'
+import SocialLinks from '../components/SocialLinks'
+import Timer from '../components/Timer'
+import { generateFeedback, getCharacterAppearances, getRandomCharacter } from '../utils/anime'
+import '../styles/game.css'
+import '../styles/SinglePlayer.css'
 
 function SinglePlayer() {
-  const [guesses, setGuesses] = useState([]);
-  const [guessesLeft, setGuessesLeft] = useState(10);
-  const [isGuessing, setIsGuessing] = useState(false);
-  const [gameEnd, setGameEnd] = useState(false);
-  const [gameEndPopup, setGameEndPopup] = useState(null);
-  const [answerCharacter, setAnswerCharacter] = useState(null);
-  const [settingsPopup, setSettingsPopup] = useState(false);
-  const [helpPopup, setHelpPopup] = useState(false);
-  const [finishInit, setFinishInit] = useState(false);
-  const [currentTimeLimit, setCurrentTimeLimit] = useState(null);
-  const [shouldResetTimer, setShouldResetTimer] = useState(false);
-  const [currentSubjectSearch, setCurrentSubjectSearch] = useState(true);
+  const [guesses, setGuesses] = useState([])
+  const [guessesLeft, setGuessesLeft] = useState(10)
+  const [isGuessing, setIsGuessing] = useState(false)
+  const [gameEnd, setGameEnd] = useState(false)
+  const [gameEndPopup, setGameEndPopup] = useState(null)
+  const [answerCharacter, setAnswerCharacter] = useState(null)
+  const [settingsPopup, setSettingsPopup] = useState(false)
+  const [helpPopup, setHelpPopup] = useState(false)
+  const [finishInit, setFinishInit] = useState(false)
+  const [currentTimeLimit, setCurrentTimeLimit] = useState(null)
+  const [shouldResetTimer, setShouldResetTimer] = useState(false)
+  const [currentSubjectSearch, setCurrentSubjectSearch] = useState(true)
   const [hints, setHints] = useState({
     first: null,
-    second: null
-  });
+    second: null,
+  })
   const [gameSettings, setGameSettings] = useLocalStorage('singleplayer-game-settings', {
-    startYear: new Date().getFullYear()-10,
+    startYear: new Date().getFullYear() - 10,
     endYear: new Date().getFullYear(),
     useSubjectPerYear: false,
     topNSubjects: 50,
-    metaTags: ["", "", ""],
+    metaTags: ['', '', ''],
     useIndex: false,
     indexId: null,
     addedSubjects: [],
@@ -49,80 +49,82 @@ function SinglePlayer() {
     characterTagNum: 6,
     subjectTagNum: 8,
     enableTagCensor: false,
-  });
+  })
 
   // Initialize game
   useEffect(() => {
-    let isMounted = true;
+    let isMounted = true
 
-    axios.get(import.meta.env.VITE_SERVER_URL).then(response => {
-      console.log(response.data);
-    });
+    axios.get(import.meta.env.VITE_SERVER_URL).then((response) => {
+      console.log(response.data)
+    })
 
     const initializeGame = async () => {
       try {
-        const character = await getRandomCharacter(gameSettings);
+        const character = await getRandomCharacter(gameSettings)
         if (isMounted) {
           // console.log('获取角色', character);
-          setAnswerCharacter(character);
-          setGuessesLeft(gameSettings.maxAttempts);
-          setCurrentTimeLimit(gameSettings.timeLimit);
-          setCurrentSubjectSearch(gameSettings.subjectSearch);
+          setAnswerCharacter(character)
+          setGuessesLeft(gameSettings.maxAttempts)
+          setCurrentTimeLimit(gameSettings.timeLimit)
+          setCurrentSubjectSearch(gameSettings.subjectSearch)
           // Prepare hints based on settings
-          let hintTexts = ['🚫提示未启用', '🚫提示未启用'];
+          let hintTexts = ['🚫提示未启用', '🚫提示未启用']
           if (gameSettings.enableHints && character.summary) {
             // Split summary into sentences using Chinese punctuation
-            const sentences = character.summary.split(/[。、，。！？ “”]/).filter(s => s.trim());
+            const sentences = character.summary.split(/[。、，！？ “”]/).filter(s => s.trim())
             if (sentences.length > 0) {
               // Randomly select 2 sentences if available
-              const selectedIndices = new Set();
+              const selectedIndices = new Set()
               while (selectedIndices.size < Math.min(2, sentences.length)) {
-                selectedIndices.add(Math.floor(Math.random() * sentences.length));
+                selectedIndices.add(Math.floor(Math.random() * sentences.length))
               }
-              hintTexts = Array.from(selectedIndices).map(i => "……"+sentences[i].trim()+"……");
+              hintTexts = Array.from(selectedIndices).map(i => `……${sentences[i].trim()}……`)
             }
           }
           setHints({
             first: hintTexts[0],
-            second: hintTexts[1]
-          });
-          console.log('初始化游戏', gameSettings);
-          setFinishInit(true);
-        }
-      } catch (error) {
-        console.error('Failed to initialize game:', error);
-        if (isMounted) {
-          alert('游戏初始化失败，请刷新页面重试');
+            second: hintTexts[1],
+          })
+          console.log('初始化游戏', gameSettings)
+          setFinishInit(true)
         }
       }
-    };
+      catch (error) {
+        console.error('Failed to initialize game:', error)
+        if (isMounted) {
+          alert('游戏初始化失败，请刷新页面重试')
+        }
+      }
+    }
 
-    initializeGame();
+    initializeGame()
 
     return () => {
-      isMounted = false;
-    };
-  }, [gameSettings]);
+      isMounted = false
+    }
+  }, [gameSettings])
 
   const handleCharacterSelect = async (character) => {
-    if (isGuessing || !answerCharacter) return;
+    if (isGuessing || !answerCharacter)
+      return
 
-    setIsGuessing(true);
-    setShouldResetTimer(true);
+    setIsGuessing(true)
+    setShouldResetTimer(true)
     if (character.id === 56822 || character.id === 56823) {
-      alert('有点意思');
+      alert('有点意思')
     }
 
     try {
-      const appearances = await getCharacterAppearances(character.id, gameSettings);
+      const appearances = await getCharacterAppearances(character.id, gameSettings)
 
       const guessData = {
         ...character,
-        ...appearances
-      };
+        ...appearances,
+      }
 
-      const isCorrect = guessData.id === answerCharacter.id;
-      setGuessesLeft(prev => prev - 1);
+      const isCorrect = guessData.id === answerCharacter.id
+      setGuessesLeft(prev => prev - 1)
 
       if (isCorrect) {
         setGuesses(prevGuesses => [...prevGuesses, {
@@ -143,21 +145,22 @@ function SinglePlayer() {
           popularityFeedback: '=',
           sharedAppearances: {
             first: appearances.appearances[0] || '',
-            count: appearances.appearances.length
+            count: appearances.appearances.length,
           },
           metaTags: guessData.metaTags,
           sharedMetaTags: guessData.metaTags,
-          isAnswer: true
-        }]);
+          isAnswer: true,
+        }])
 
-        setGameEnd(true);
-        alert('熟悉这个角色吗？欢迎贡献标签');
+        setGameEnd(true)
+        alert('熟悉这个角色吗？欢迎贡献标签')
         setGameEndPopup({
           result: 'win',
-          answer: answerCharacter
-        });
-      } else if (guessesLeft <= 1) {
-        const feedback = generateFeedback(guessData, answerCharacter);
+          answer: answerCharacter,
+        })
+      }
+      else if (guessesLeft <= 1) {
+        const feedback = generateFeedback(guessData, answerCharacter)
         setGuesses(prevGuesses => [...prevGuesses, {
           icon: guessData.image,
           name: guessData.name,
@@ -177,17 +180,18 @@ function SinglePlayer() {
           sharedAppearances: feedback.shared_appearances,
           metaTags: guessData.metaTags,
           sharedMetaTags: feedback.metaTags.shared,
-          isAnswer: false
-        }]);
+          isAnswer: false,
+        }])
 
-        setGameEnd(true);
-        alert('认识这个角色吗？欢迎贡献标签');
+        setGameEnd(true)
+        alert('认识这个角色吗？欢迎贡献标签')
         setGameEndPopup({
           result: 'lose',
-          answer: answerCharacter
-        });
-      } else {
-        const feedback = generateFeedback(guessData, answerCharacter);
+          answer: answerCharacter,
+        })
+      }
+      else {
+        const feedback = generateFeedback(guessData, answerCharacter)
         setGuesses(prevGuesses => [...prevGuesses, {
           icon: guessData.image,
           name: guessData.name,
@@ -207,109 +211,114 @@ function SinglePlayer() {
           sharedAppearances: feedback.shared_appearances,
           metaTags: guessData.metaTags,
           sharedMetaTags: feedback.metaTags.shared,
-          isAnswer: false
-        }]);
+          isAnswer: false,
+        }])
       }
-    } catch (error) {
-      console.error('Error processing guess:', error);
-      alert('出错了，请重试');
-    } finally {
-      setIsGuessing(false);
-      setShouldResetTimer(false);
     }
-  };
+    catch (error) {
+      console.error('Error processing guess:', error)
+      alert('出错了，请重试')
+    }
+    finally {
+      setIsGuessing(false)
+      setShouldResetTimer(false)
+    }
+  }
 
   const handleSettingsChange = (setting, value) => {
     setGameSettings(prev => ({
       ...prev,
-      [setting]: value
-    }));
-  };
+      [setting]: value,
+    }))
+  }
 
   const handleRestartWithSettings = () => {
-    setGuesses([]);
-    setGuessesLeft(gameSettings.maxAttempts);
-    setIsGuessing(false);
-    setGameEnd(false);
-    setGameEndPopup(null);
-    setAnswerCharacter(null);
-    setSettingsPopup(false);
-    setCurrentTimeLimit(gameSettings.timeLimit);
-    setCurrentSubjectSearch(gameSettings.subjectSearch);
-    setShouldResetTimer(false);
-    setFinishInit(false);
+    setGuesses([])
+    setGuessesLeft(gameSettings.maxAttempts)
+    setIsGuessing(false)
+    setGameEnd(false)
+    setGameEndPopup(null)
+    setAnswerCharacter(null)
+    setSettingsPopup(false)
+    setCurrentTimeLimit(gameSettings.timeLimit)
+    setCurrentSubjectSearch(gameSettings.subjectSearch)
+    setShouldResetTimer(false)
+    setFinishInit(false)
     setHints({
       first: null,
-      second: null
-    });
+      second: null,
+    })
 
     const initializeNewGame = async () => {
       try {
-        const character = await getRandomCharacter(gameSettings);
-        setAnswerCharacter(character);
+        const character = await getRandomCharacter(gameSettings)
+        setAnswerCharacter(character)
         // Prepare hints based on settings for new game
-        let hintTexts = ['🚫提示未启用', '🚫提示未启用'];
+        let hintTexts = ['🚫提示未启用', '🚫提示未启用']
         if (gameSettings.enableHints && character.summary) {
           // Split summary into sentences using Chinese punctuation
-          const sentences = character.summary.split(/[。、，。！？ “”]/).filter(s => s.trim());
+          const sentences = character.summary.split(/[。、，！？ “”]/).filter(s => s.trim())
           if (sentences.length > 0) {
             // Randomly select 2 sentences if available
-            const selectedIndices = new Set();
+            const selectedIndices = new Set()
             while (selectedIndices.size < Math.min(2, sentences.length)) {
-              selectedIndices.add(Math.floor(Math.random() * sentences.length));
+              selectedIndices.add(Math.floor(Math.random() * sentences.length))
             }
-            hintTexts = Array.from(selectedIndices).map(i => "……"+sentences[i].trim()+"……");
+            hintTexts = Array.from(selectedIndices).map(i => `……${sentences[i].trim()}……`)
           }
         }
         setHints({
           first: hintTexts[0],
-          second: hintTexts[1]
-        });
-        console.log('初始化游戏', gameSettings);
-        setFinishInit(true);
-      } catch (error) {
-        console.error('Failed to initialize new game:', error);
-        alert('游戏初始化失败，请重试');
+          second: hintTexts[1],
+        })
+        console.log('初始化游戏', gameSettings)
+        setFinishInit(true)
       }
-    };
+      catch (error) {
+        console.error('Failed to initialize new game:', error)
+        alert('游戏初始化失败，请重试')
+      }
+    }
 
-    initializeNewGame();
-  };
+    initializeNewGame()
+  }
 
-  const timeUpRef = useRef(false);
+  const timeUpRef = useRef(false)
 
   const handleTimeUp = () => {
-    if (timeUpRef.current) return; // prevent multiple triggers
-    timeUpRef.current = true;
+    if (timeUpRef.current)
+      return // prevent multiple triggers
+    timeUpRef.current = true
 
-    setGuessesLeft(prev => {
-      const newGuessesLeft = prev - 1;
+    setGuessesLeft((prev) => {
+      const newGuessesLeft = prev - 1
       if (newGuessesLeft <= 0) {
-        setGameEnd(true);
+        setGameEnd(true)
         setGameEndPopup({
           result: 'lose',
-          answer: answerCharacter
-        });
+          answer: answerCharacter,
+        })
       }
-      return newGuessesLeft;
-    });
-    setShouldResetTimer(true);
+      return newGuessesLeft
+    })
+    setShouldResetTimer(true)
     setTimeout(() => {
-      setShouldResetTimer(false);
-      timeUpRef.current = false;
-    }, 100);
-  };
+      setShouldResetTimer(false)
+      timeUpRef.current = false
+    }, 100)
+  }
 
   const handleSurrender = () => {
-    if (gameEnd) return;
+    if (gameEnd)
+      return
 
-    setGameEnd(true);
+    setGameEnd(true)
     setGameEndPopup({
       result: 'lose',
-      answer: answerCharacter
-    });
-    alert('已投降！查看角色详情');
-  };
+      answer: answerCharacter,
+    })
+    alert('已投降！查看角色详情')
+  }
 
   return (
     <div className="single-player-container">
@@ -372,7 +381,7 @@ function SinglePlayer() {
         />
       )}
     </div>
-  );
+  )
 }
 
-export default SinglePlayer;
+export default SinglePlayer

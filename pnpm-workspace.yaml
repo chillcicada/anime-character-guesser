@@ -1,0 +1,7 @@
+packages:
+  - client_v3
+  - server_v3
+  - data_server
+
+onlyBuiltDependencies:
+  - esbuild

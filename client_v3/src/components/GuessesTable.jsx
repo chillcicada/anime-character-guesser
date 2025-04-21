@@ -1,29 +1,29 @@
-import '../styles/guesses.css';
-import { useState } from 'react';
-import { censoredText } from '../utils/anime';
+import { useState } from 'react'
+import { censoredText } from '../utils/anime'
+import '../styles/guesses.css'
 
 function GuessesTable({ guesses, enableTagCensor }) {
-  const [clickedExpandTags, setClickedExpandTags] = useState(new Set());
+  const [clickedExpandTags, setClickedExpandTags] = useState(new Set())
 
   const getGenderEmoji = (gender) => {
     switch (gender) {
       case 'male':
-        return '♂️';
+        return '♂️'
       case 'female':
-        return '♀️';
+        return '♀️'
       default:
-        return '❓';
+        return '❓'
     }
-  };
+  }
 
   const handleExpandTagClick = (guessIndex, tagIndex) => {
-    const key = `${guessIndex}-${tagIndex}`;
-    setClickedExpandTags(prev => {
-      const newSet = new Set(prev);
-      newSet.add(key);
-      return newSet;
-    });
-  };
+    const key = `${guessIndex}-${tagIndex}`
+    setClickedExpandTags((prev) => {
+      const newSet = new Set(prev)
+      newSet.add(key)
+      return newSet
+    })
+  }
 
   return (
     <div className="table-container">
@@ -34,8 +34,16 @@ function GuessesTable({ guesses, enableTagCensor }) {
             <th>名字</th>
             <th>性别</th>
             <th>人气值</th>
-            <th>作品数<br/>最高分</th>
-            <th>最晚登场<br/>最早登场</th>
+            <th>
+              作品数
+              <br />
+              最高分
+            </th>
+            <th>
+              最晚登场
+              <br />
+              最早登场
+            </th>
             <th>标签</th>
             <th>共同出演</th>
           </tr>
@@ -59,38 +67,43 @@ function GuessesTable({ guesses, enableTagCensor }) {
               </td>
               <td>
                 <span className={`feedback-cell ${guess.popularityFeedback === '=' ? 'correct' : (guess.popularityFeedback === '+' || guess.popularityFeedback === '-') ? 'partial' : ''}`}>
-                  {guess.popularity}{(guess.popularityFeedback === '+' || guess.popularityFeedback === '++') ? ' ↓' : (guess.popularityFeedback === '-' || guess.popularityFeedback === '--') ? ' ↑' : ''}
+                  {guess.popularity}
+                  {(guess.popularityFeedback === '+' || guess.popularityFeedback === '++') ? ' ↓' : (guess.popularityFeedback === '-' || guess.popularityFeedback === '--') ? ' ↑' : ''}
                 </span>
               </td>
               <td>
                 <div className="appearance-container">
                   <div className={`feedback-cell appearance-count ${guess.appearancesCountFeedback === '=' ? 'correct' : (guess.appearancesCountFeedback === '+' || guess.appearancesCountFeedback === '-') ? 'partial' : guess.appearancesCountFeedback === '?' ? 'unknown' : ''}`}>
-                    {guess.appearancesCount}{(guess.appearancesCountFeedback === '+' || guess.appearancesCountFeedback === '++') ? ' ↓' : (guess.appearancesCountFeedback === '-' || guess.appearancesCountFeedback === '--') ? ' ↑' : ''}
+                    {guess.appearancesCount}
+                    {(guess.appearancesCountFeedback === '+' || guess.appearancesCountFeedback === '++') ? ' ↓' : (guess.appearancesCountFeedback === '-' || guess.appearancesCountFeedback === '--') ? ' ↑' : ''}
                   </div>
                   <div className={`feedback-cell appearance-rating ${guess.ratingFeedback === '=' ? 'correct' : (guess.ratingFeedback === '+' || guess.ratingFeedback === '-') ? 'partial' : guess.ratingFeedback === '?' ? 'unknown' : ''}`}>
-                    {guess.highestRating === -1 ? '无' : guess.highestRating}{(guess.ratingFeedback === '+' || guess.ratingFeedback === '++') ? ' ↓' : (guess.ratingFeedback === '-' || guess.ratingFeedback === '--') ? ' ↑' : ''}
+                    {guess.highestRating === -1 ? '无' : guess.highestRating}
+                    {(guess.ratingFeedback === '+' || guess.ratingFeedback === '++') ? ' ↓' : (guess.ratingFeedback === '-' || guess.ratingFeedback === '--') ? ' ↑' : ''}
                   </div>
                 </div>
               </td>
               <td>
                 <div className="appearance-container">
                   <div className={`feedback-cell latestAppearance ${guess.latestAppearanceFeedback === '=' ? 'correct' : (guess.latestAppearanceFeedback === '+' || guess.latestAppearanceFeedback === '-') ? 'partial' : guess.latestAppearanceFeedback === '?' ? 'unknown' : ''}`}>
-                    {guess.latestAppearance === -1 ? '无' : guess.latestAppearance}{(guess.latestAppearanceFeedback === '+' || guess.latestAppearanceFeedback === '++') ? ' ↓' : (guess.latestAppearanceFeedback === '-' || guess.latestAppearanceFeedback === '--') ? ' ↑' : ''}
+                    {guess.latestAppearance === -1 ? '无' : guess.latestAppearance}
+                    {(guess.latestAppearanceFeedback === '+' || guess.latestAppearanceFeedback === '++') ? ' ↓' : (guess.latestAppearanceFeedback === '-' || guess.latestAppearanceFeedback === '--') ? ' ↑' : ''}
                   </div>
                   <div className={`feedback-cell earliestAppearance ${guess.earliestAppearanceFeedback === '=' ? 'correct' : (guess.earliestAppearanceFeedback === '+' || guess.earliestAppearanceFeedback === '-') ? 'partial' : guess.earliestAppearanceFeedback === '?' ? 'unknown' : ''}`}>
-                    {guess.earliestAppearance === -1 ? '无' : guess.earliestAppearance}{(guess.earliestAppearanceFeedback === '+' || guess.earliestAppearanceFeedback === '++') ? ' ↓' : (guess.earliestAppearanceFeedback === '-' || guess.earliestAppearanceFeedback === '--') ? ' ↑' : ''}
+                    {guess.earliestAppearance === -1 ? '无' : guess.earliestAppearance}
+                    {(guess.earliestAppearanceFeedback === '+' || guess.earliestAppearanceFeedback === '++') ? ' ↓' : (guess.earliestAppearanceFeedback === '-' || guess.earliestAppearanceFeedback === '--') ? ' ↑' : ''}
                   </div>
                 </div>
               </td>
               <td>
                 <div className="meta-tags-container">
                   {guess.metaTags.map((tag, tagIndex) => {
-                    const isExpandTag = tag === '展开';
-                    const tagKey = `${guessIndex}-${tagIndex}`;
-                    const isClicked = clickedExpandTags.has(tagKey);
-                    
+                    const isExpandTag = tag === '展开'
+                    const tagKey = `${guessIndex}-${tagIndex}`
+                    const isClicked = clickedExpandTags.has(tagKey)
+
                     return (
-                      <span 
+                      <span
                         key={tagIndex}
                         className={`meta-tag ${guess.sharedMetaTags.includes(tag) ? 'shared' : ''} ${isExpandTag ? 'expand-tag' : ''}`}
                         onClick={isExpandTag ? () => handleExpandTagClick(guessIndex, tagIndex) : undefined}
@@ -98,7 +111,7 @@ function GuessesTable({ guesses, enableTagCensor }) {
                       >
                         { enableTagCensor ? censoredText(tag) : tag }
                       </span>
-                    );
+                    )
                   })}
                 </div>
               </td>
@@ -113,7 +126,7 @@ function GuessesTable({ guesses, enableTagCensor }) {
         </tbody>
       </table>
     </div>
-  );
+  )
 }
 
-export default GuessesTable; 
+export default GuessesTable

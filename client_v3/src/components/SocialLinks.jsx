@@ -1,4 +1,4 @@
-import '../styles/social.css';
+import '../styles/social.css'
 
 function SocialLinks({ onSettingsClick, onHelpClick }) {
   return (
@@ -11,7 +11,7 @@ function SocialLinks({ onSettingsClick, onHelpClick }) {
         <i className="fas fa-cog"></i>
       </button>
       <a href="/" className="social-link" title="Home">
-          <i className="fas fa-home"></i>
+        <i className="fas fa-home"></i>
       </a>
       <button className="social-link help-button" onClick={onHelpClick}>
         <i className="fas fa-question-circle"></i>
@@ -26,7 +26,7 @@ function SocialLinks({ onSettingsClick, onHelpClick }) {
         <i className="fa-brands fa-bilibili"></i>
       </a>
     </div>
-  );
+  )
 }
 
-export default SocialLinks; 
+export default SocialLinks

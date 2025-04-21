@@ -1,9 +1,7 @@
-import axios from "axios";
-
-const DB_SERVER_URL = import.meta.env.VITE_DB_SERVER_URL || 'http://localhost:3001';
+const DB_SERVER_URL = import.meta.env.VITE_DB_SERVER_URL || 'http://localhost:3001'
 
 if (!DB_SERVER_URL) {
-  throw new Error('VITE_DB_SERVER_URL environment variable is not defined');
+  throw new Error('VITE_DB_SERVER_URL environment variable is not defined')
 }
 
 export async function submitCharacterTags(characterId, tags) {
@@ -17,16 +15,17 @@ export async function submitCharacterTags(characterId, tags) {
         characterId,
         tags,
       }),
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    return response.json();
-  } catch (error) {
-    console.error('Error submitting character tags:', error);
-    throw error;
+    return response.json()
+  }
+  catch (error) {
+    console.error('Error submitting character tags:', error)
+    throw error
   }
 }
 
@@ -41,16 +40,16 @@ export async function proposeCustomTags(characterId, tags) {
         characterId,
         tags,
       }),
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    return response.json();
-  } catch (error) {
-    console.error('Error proposing custom tags:', error);
-    throw error;
+    return response.json()
+  }
+  catch (error) {
+    console.error('Error proposing custom tags:', error)
+    throw error
   }
 }
-

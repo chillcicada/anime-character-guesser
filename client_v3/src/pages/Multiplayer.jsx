@@ -1,40 +1,40 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
-import { io } from 'socket.io-client';
-import { getRandomCharacter, getCharacterAppearances, generateFeedback } from '../utils/anime';
-import SettingsPopup from '../components/SettingsPopup';
-import SearchBar from '../components/SearchBar';
-import GuessesTable from '../components/GuessesTable';
-import Timer from '../components/Timer';
-import PlayerList from '../components/PlayerList';
-import GameEndPopup from '../components/GameEndPopup';
-import '../styles/Multiplayer.css';
-import '../styles/game.css';
-import CryptoJS from 'crypto-js';
-import { useLocalStorage } from 'usehooks-ts';
+import CryptoJS from 'crypto-js'
+import { useEffect, useRef, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { io } from 'socket.io-client'
+import { useLocalStorage } from 'usehooks-ts'
+import { v4 as uuidv4 } from 'uuid'
+import GameEndPopup from '../components/GameEndPopup'
+import GuessesTable from '../components/GuessesTable'
+import PlayerList from '../components/PlayerList'
+import SearchBar from '../components/SearchBar'
+import SettingsPopup from '../components/SettingsPopup'
+import Timer from '../components/Timer'
+import { generateFeedback, getCharacterAppearances, getRandomCharacter } from '../utils/anime'
+import '../styles/Multiplayer.css'
+import '../styles/game.css'
 
-const secret = import.meta.env.VITE_AES_SECRET || 'My-Secret-Key';
-const SOCKET_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
+const secret = import.meta.env.VITE_AES_SECRET || 'My-Secret-Key'
+const SOCKET_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000'
 
-const Multiplayer = () => {
-  const navigate = useNavigate();
-  const { roomId } = useParams();
-  const [isHost, setIsHost] = useState(false);
-  const [players, setPlayers] = useState([]);
-  const [roomUrl, setRoomUrl] = useState('');
-  const [username, setUsername] = useState('');
-  const [isJoined, setIsJoined] = useState(false);
-  const [socket, setSocket] = useState(null);
-  const [error, setError] = useState('');
-  const [showSettings, setShowSettings] = useState(false);
-  const [isPublic, setIsPublic] = useState(true);
+function Multiplayer() {
+  const navigate = useNavigate()
+  const { roomId } = useParams()
+  const [isHost, setIsHost] = useState(false)
+  const [players, setPlayers] = useState([])
+  const [roomUrl, setRoomUrl] = useState('')
+  const [username, setUsername] = useState('')
+  const [isJoined, setIsJoined] = useState(false)
+  const [socket, setSocket] = useState(null)
+  const [error, setError] = useState('')
+  const [showSettings, setShowSettings] = useState(false)
+  const [isPublic, setIsPublic] = useState(true)
   const [gameSettings, setGameSettings, removeGameSettings] = useLocalStorage('multiplayer-game-settings', {
-    startYear: new Date().getFullYear()-5,
+    startYear: new Date().getFullYear() - 5,
     endYear: new Date().getFullYear(),
     topNSubjects: 20,
     useSubjectPerYear: false,
-    metaTags: ["", "", ""],
+    metaTags: ['', '', ''],
     useIndex: false,
     indexId: null,
     addedSubjects: [],
@@ -47,211 +47,215 @@ const Multiplayer = () => {
     subjectSearch: true,
     characterTagNum: 6,
     subjectTagNum: 8,
-    enableTagCensor: false
-  });
+    enableTagCensor: false,
+  })
 
   // Game state
-  const [isGameStarted, setIsGameStarted] = useState(false);
-  const [guesses, setGuesses] = useState([]);
-  const [guessesLeft, setGuessesLeft] = useState(10);
-  const [isGuessing, setIsGuessing] = useState(false);
-  const [answerCharacter, setAnswerCharacter] = useState(null);
+  const [isGameStarted, setIsGameStarted] = useState(false)
+  const [guesses, setGuesses] = useState([])
+  const [guessesLeft, setGuessesLeft] = useState(10)
+  const [isGuessing, setIsGuessing] = useState(false)
+  const [answerCharacter, setAnswerCharacter] = useState(null)
   const [hints, setHints] = useState({
     first: null,
-    second: null
-  });
-  const [shouldResetTimer, setShouldResetTimer] = useState(false);
-  const [gameEnd, setGameEnd] = useState(false);
-  const timeUpRef = useRef(false);
-  const gameEndedRef = useRef(false);
-  const [winner, setWinner] = useState(null);
-  const [globalGameEnd, setGlobalGameEnd] = useState(false);
-  const [guessesHistory, setGuessesHistory] = useState([]);
-  const [showNames, setShowNames] = useState(true);
-  const [currentSubjectSearch, setCurrentSubjectSearch] = useState(true);
-  const [showCharacterPopup, setShowCharacterPopup] = useState(false);
+    second: null,
+  })
+  const [shouldResetTimer, setShouldResetTimer] = useState(false)
+  const [gameEnd, setGameEnd] = useState(false)
+  const timeUpRef = useRef(false)
+  const gameEndedRef = useRef(false)
+  const [winner, setWinner] = useState(null)
+  const [globalGameEnd, setGlobalGameEnd] = useState(false)
+  const [guessesHistory, setGuessesHistory] = useState([])
+  const [showNames, setShowNames] = useState(true)
+  const [currentSubjectSearch, setCurrentSubjectSearch] = useState(true)
+  const [showCharacterPopup, setShowCharacterPopup] = useState(false)
 
   useEffect(() => {
     // Initialize socket connection
-    const newSocket = io(SOCKET_URL);
-    setSocket(newSocket);
+    const newSocket = io(SOCKET_URL)
+    setSocket(newSocket)
 
     // Socket event listeners
     newSocket.on('updatePlayers', ({ players, isPublic }) => {
-      setPlayers(players);
+      setPlayers(players)
       if (isPublic !== undefined) {
-        setIsPublic(isPublic);
+        setIsPublic(isPublic)
       }
-    });
+    })
 
     newSocket.on('roomClosed', ({ message }) => {
-      alert(message || '房主已断开连接，房间已关闭。');
-      setError('房间已关闭');
-      navigate('/multiplayer');
-    });
+      alert(message || '房主已断开连接，房间已关闭。')
+      setError('房间已关闭')
+      navigate('/multiplayer')
+    })
 
     newSocket.on('error', ({ message }) => {
-      alert(`错误: ${message}`);
-      setError(message);
-      setIsJoined(false);
-    });
+      alert(`错误: ${message}`)
+      setError(message)
+      setIsJoined(false)
+    })
 
     newSocket.on('updateGameSettings', ({ settings }) => {
-      console.log('Received game settings:', settings);
-      setGameSettings(settings);
-    });
+      console.log('Received game settings:', settings)
+      setGameSettings(settings)
+    })
 
     newSocket.on('gameStart', ({ character, settings, players, isPublic }) => {
-      gameEndedRef.current = false;
-      const decryptedCharacter = JSON.parse(CryptoJS.AES.decrypt(character, secret).toString(CryptoJS.enc.Utf8));
-      setAnswerCharacter(decryptedCharacter);
-      setGameSettings(settings);
-      setGuessesLeft(settings.maxAttempts);
-      setCurrentSubjectSearch(settings.subjectSearch);
+      gameEndedRef.current = false
+      const decryptedCharacter = JSON.parse(CryptoJS.AES.decrypt(character, secret).toString(CryptoJS.enc.Utf8))
+      setAnswerCharacter(decryptedCharacter)
+      setGameSettings(settings)
+      setGuessesLeft(settings.maxAttempts)
+      setCurrentSubjectSearch(settings.subjectSearch)
       if (players) {
-        setPlayers(players);
+        setPlayers(players)
       }
       if (isPublic !== undefined) {
-        setIsPublic(isPublic);
+        setIsPublic(isPublic)
       }
 
       // Prepare hints if enabled
-      let hintTexts = ['🚫提示未启用', '🚫提示未启用'];
+      let hintTexts = ['🚫提示未启用', '🚫提示未启用']
       if (settings.enableHints && decryptedCharacter.summary) {
-        const sentences = decryptedCharacter.summary.split(/[。、，。！？ ""]/).filter(s => s.trim());
+        const sentences = decryptedCharacter.summary.split(/[。、，！？ "]/).filter(s => s.trim())
         if (sentences.length > 0) {
-          const selectedIndices = new Set();
+          const selectedIndices = new Set()
           while (selectedIndices.size < Math.min(2, sentences.length)) {
-            selectedIndices.add(Math.floor(Math.random() * sentences.length));
+            selectedIndices.add(Math.floor(Math.random() * sentences.length))
           }
-          hintTexts = Array.from(selectedIndices).map(i => "……"+sentences[i].trim()+"……");
+          hintTexts = Array.from(selectedIndices).map(i => `……${sentences[i].trim()}……`)
         }
       }
       setHints({
         first: hintTexts[0],
-        second: hintTexts[1]
-      });
-      setGlobalGameEnd(false);
-      setIsGameStarted(true);
-      setGameEnd(false);
-      setGuesses([]);
-    });
+        second: hintTexts[1],
+      })
+      setGlobalGameEnd(false)
+      setIsGameStarted(true)
+      setGameEnd(false)
+      setGuesses([])
+    })
 
     // Listen for game end event
     newSocket.on('gameEnded', ({ message, guesses }) => {
-      setWinner(message);
-      setGlobalGameEnd(true);
-      setGuessesHistory(guesses);
-      setIsGameStarted(false);
-    });
+      setWinner(message)
+      setGlobalGameEnd(true)
+      setGuessesHistory(guesses)
+      setIsGameStarted(false)
+    })
 
     // Listen for reset ready status event
     newSocket.on('resetReadyStatus', () => {
       setPlayers(prevPlayers => prevPlayers.map(player => ({
         ...player,
-        ready: player.isHost ? player.ready : false
-      })));
-    });
+        ready: player.isHost ? player.ready : false,
+      })))
+    })
 
     return () => {
-      newSocket.disconnect();
-    };
-  }, [navigate]);
+      newSocket.disconnect()
+    }
+  }, [navigate])
 
   useEffect(() => {
     if (!roomId) {
       // Create new room if no roomId in URL
-      const newRoomId = uuidv4();
-      setIsHost(true);
-      navigate(`/multiplayer/${newRoomId}`);
-    } else {
-      // Set room URL for sharing
-      setRoomUrl(window.location.href);
+      const newRoomId = uuidv4()
+      setIsHost(true)
+      navigate(`/multiplayer/${newRoomId}`)
     }
-  }, [roomId, navigate]);
+    else {
+      // Set room URL for sharing
+      setRoomUrl(window.location.href)
+    }
+  }, [roomId, navigate])
 
   useEffect(() => {
-    console.log('Game Settings:', gameSettings);
+    console.log('Game Settings:', gameSettings)
     if (isHost && isJoined) {
-      socket.emit('updateGameSettings', { roomId, settings: gameSettings });
+      socket.emit('updateGameSettings', { roomId, settings: gameSettings })
     }
-  }, [showSettings]);
+  }, [showSettings])
 
   const handleJoinRoom = () => {
     if (!username.trim()) {
-      alert('请输入用户名');
-      setError('请输入用户名');
-      return;
+      alert('请输入用户名')
+      setError('请输入用户名')
+      return
     }
 
-    setError('');
+    setError('')
     if (isHost) {
-      socket.emit('createRoom', { roomId, username });
+      socket.emit('createRoom', { roomId, username })
       // Send initial game settings when creating room
-      socket.emit('updateGameSettings', { roomId, settings: gameSettings });
-    } else {
-      socket.emit('joinRoom', { roomId, username });
-      // Request current settings from server
-      socket.emit('requestGameSettings', { roomId });
+      socket.emit('updateGameSettings', { roomId, settings: gameSettings })
     }
-    setIsJoined(true);
-  };
+    else {
+      socket.emit('joinRoom', { roomId, username })
+      // Request current settings from server
+      socket.emit('requestGameSettings', { roomId })
+    }
+    setIsJoined(true)
+  }
 
   const handleReadyToggle = () => {
-    socket.emit('toggleReady', { roomId });
-  };
+    socket.emit('toggleReady', { roomId })
+  }
 
   const handleSettingsChange = (key, value) => {
     setGameSettings(prev => ({
       ...prev,
-      [key]: value
-    }));
-  };
+      [key]: value,
+    }))
+  }
 
   const copyRoomUrl = () => {
-    navigator.clipboard.writeText(roomUrl);
-  };
+    navigator.clipboard.writeText(roomUrl)
+  }
 
   const handleGameEnd = (isWin) => {
-    if (gameEndedRef.current) return;
-    gameEndedRef.current = true;
-    setGameEnd(true);
+    if (gameEndedRef.current)
+      return
+    gameEndedRef.current = true
+    setGameEnd(true)
 
     // Emit game end event to server
     socket.emit('gameEnd', {
       roomId,
-      result: isWin ? 'win' : 'lose'
-    });
+      result: isWin ? 'win' : 'lose',
+    })
 
     // Update player score
     if (isWin) {
-      const updatedPlayers = players.map(p => {
+      const updatedPlayers = players.map((p) => {
         if (p.id === socket.id) {
-          return { ...p, score: p.score + 1 };
+          return { ...p, score: p.score + 1 }
         }
-        return p;
-      });
-      setPlayers(updatedPlayers);
-      socket.emit('updateScore', { roomId, score: updatedPlayers.find(p => p.id === socket.id).score });
+        return p
+      })
+      setPlayers(updatedPlayers)
+      socket.emit('updateScore', { roomId, score: updatedPlayers.find(p => p.id === socket.id).score })
     }
-  };
+  }
 
   const handleCharacterSelect = async (character) => {
-    if (isGuessing || !answerCharacter || gameEnd) return;
+    if (isGuessing || !answerCharacter || gameEnd)
+      return
 
-    setIsGuessing(true);
-    setShouldResetTimer(true);
+    setIsGuessing(true)
+    setShouldResetTimer(true)
 
     try {
-      const appearances = await getCharacterAppearances(character.id, gameSettings);
+      const appearances = await getCharacterAppearances(character.id, gameSettings)
 
       const guessData = {
         ...character,
-        ...appearances
-      };
+        ...appearances,
+      }
 
-      const isCorrect = guessData.id === answerCharacter.id;
-      setGuessesLeft(prev => prev - 1);
+      const isCorrect = guessData.id === answerCharacter.id
+      setGuessesLeft(prev => prev - 1)
       // Send guess result to server
       socket.emit('playerGuess', {
         roomId,
@@ -259,9 +263,9 @@ const Multiplayer = () => {
           isCorrect,
           icon: guessData.image,
           name: guessData.name,
-          nameCn: guessData.nameCn
-        }
-      });
+          nameCn: guessData.nameCn,
+        },
+      })
 
       if (isCorrect) {
         setGuesses(prevGuesses => [...prevGuesses, {
@@ -282,181 +286,188 @@ const Multiplayer = () => {
           popularityFeedback: '=',
           sharedAppearances: {
             first: appearances.appearances[0] || '',
-            count: appearances.appearances.length
+            count: appearances.appearances.length,
           },
           metaTags: guessData.metaTags,
           sharedMetaTags: guessData.metaTags,
-          isAnswer: true
-        }]);
+          isAnswer: true,
+        }])
 
-        handleGameEnd(true);
-      } else if (guessesLeft <= 1) {
-        const feedback = generateFeedback(guessData, answerCharacter);
-        setGuesses(prevGuesses => [...prevGuesses, {
-          icon: guessData.image,
-          name: guessData.name,
-          nameCn: guessData.nameCn,
-          gender: guessData.gender,
-          genderFeedback: feedback.gender.feedback,
-          latestAppearance: guessData.latestAppearance,
-          latestAppearanceFeedback: feedback.latestAppearance.feedback,
-          earliestAppearance: guessData.earliestAppearance,
-          earliestAppearanceFeedback: feedback.earliestAppearance.feedback,
-          highestRating: guessData.highestRating,
-          ratingFeedback: feedback.rating.feedback,
-          appearancesCount: guessData.appearances.length,
-          appearancesCountFeedback: feedback.appearancesCount.feedback,
-          popularity: guessData.popularity,
-          popularityFeedback: feedback.popularity.feedback,
-          sharedAppearances: feedback.shared_appearances,
-          metaTags: guessData.metaTags,
-          sharedMetaTags: feedback.metaTags.shared,
-          isAnswer: false
-        }]);
-
-        handleGameEnd(false);
-      } else {
-        const feedback = generateFeedback(guessData, answerCharacter);
-        setGuesses(prevGuesses => [...prevGuesses, {
-          icon: guessData.image,
-          name: guessData.name,
-          nameCn: guessData.nameCn,
-          gender: guessData.gender,
-          genderFeedback: feedback.gender.feedback,
-          latestAppearance: guessData.latestAppearance,
-          latestAppearanceFeedback: feedback.latestAppearance.feedback,
-          earliestAppearance: guessData.earliestAppearance,
-          earliestAppearanceFeedback: feedback.earliestAppearance.feedback,
-          highestRating: guessData.highestRating,
-          ratingFeedback: feedback.rating.feedback,
-          appearancesCount: guessData.appearances.length,
-          appearancesCountFeedback: feedback.appearancesCount.feedback,
-          popularity: guessData.popularity,
-          popularityFeedback: feedback.popularity.feedback,
-          sharedAppearances: feedback.shared_appearances,
-          metaTags: guessData.metaTags,
-          sharedMetaTags: feedback.metaTags.shared,
-          isAnswer: false
-        }]);
+        handleGameEnd(true)
       }
-    } catch (error) {
-      console.error('Error processing guess:', error);
-      alert('出错了，请重试');
-    } finally {
-      setIsGuessing(false);
-      setShouldResetTimer(false);
+      else if (guessesLeft <= 1) {
+        const feedback = generateFeedback(guessData, answerCharacter)
+        setGuesses(prevGuesses => [...prevGuesses, {
+          icon: guessData.image,
+          name: guessData.name,
+          nameCn: guessData.nameCn,
+          gender: guessData.gender,
+          genderFeedback: feedback.gender.feedback,
+          latestAppearance: guessData.latestAppearance,
+          latestAppearanceFeedback: feedback.latestAppearance.feedback,
+          earliestAppearance: guessData.earliestAppearance,
+          earliestAppearanceFeedback: feedback.earliestAppearance.feedback,
+          highestRating: guessData.highestRating,
+          ratingFeedback: feedback.rating.feedback,
+          appearancesCount: guessData.appearances.length,
+          appearancesCountFeedback: feedback.appearancesCount.feedback,
+          popularity: guessData.popularity,
+          popularityFeedback: feedback.popularity.feedback,
+          sharedAppearances: feedback.shared_appearances,
+          metaTags: guessData.metaTags,
+          sharedMetaTags: feedback.metaTags.shared,
+          isAnswer: false,
+        }])
+
+        handleGameEnd(false)
+      }
+      else {
+        const feedback = generateFeedback(guessData, answerCharacter)
+        setGuesses(prevGuesses => [...prevGuesses, {
+          icon: guessData.image,
+          name: guessData.name,
+          nameCn: guessData.nameCn,
+          gender: guessData.gender,
+          genderFeedback: feedback.gender.feedback,
+          latestAppearance: guessData.latestAppearance,
+          latestAppearanceFeedback: feedback.latestAppearance.feedback,
+          earliestAppearance: guessData.earliestAppearance,
+          earliestAppearanceFeedback: feedback.earliestAppearance.feedback,
+          highestRating: guessData.highestRating,
+          ratingFeedback: feedback.rating.feedback,
+          appearancesCount: guessData.appearances.length,
+          appearancesCountFeedback: feedback.appearancesCount.feedback,
+          popularity: guessData.popularity,
+          popularityFeedback: feedback.popularity.feedback,
+          sharedAppearances: feedback.shared_appearances,
+          metaTags: guessData.metaTags,
+          sharedMetaTags: feedback.metaTags.shared,
+          isAnswer: false,
+        }])
+      }
     }
-  };
+    catch (error) {
+      console.error('Error processing guess:', error)
+      alert('出错了，请重试')
+    }
+    finally {
+      setIsGuessing(false)
+      setShouldResetTimer(false)
+    }
+  }
 
   const handleTimeUp = () => {
-    if (timeUpRef.current || gameEnd || gameEndedRef.current) return;
-    timeUpRef.current = true;
+    if (timeUpRef.current || gameEnd || gameEndedRef.current)
+      return
+    timeUpRef.current = true
 
-    const newGuessesLeft = guessesLeft - 1;
+    const newGuessesLeft = guessesLeft - 1
 
-    setGuessesLeft(newGuessesLeft);
+    setGuessesLeft(newGuessesLeft)
 
     // Always emit timeout
-    socket.emit('timeOut', { roomId });
+    socket.emit('timeOut', { roomId })
 
     if (newGuessesLeft <= 0) {
       setTimeout(() => {
-        handleGameEnd(false);
-      }, 100);
+        handleGameEnd(false)
+      }, 100)
     }
 
-    setShouldResetTimer(true);
+    setShouldResetTimer(true)
     setTimeout(() => {
-      setShouldResetTimer(false);
-      timeUpRef.current = false;
-    }, 100);
-  };
+      setShouldResetTimer(false)
+      timeUpRef.current = false
+    }, 100)
+  }
 
   const handleSurrender = () => {
-    if (gameEnd || gameEndedRef.current) return;
-    gameEndedRef.current = true;
-    setGameEnd(true);
+    if (gameEnd || gameEndedRef.current)
+      return
+    gameEndedRef.current = true
+    setGameEnd(true)
 
     // Emit game end event with surrender result
     socket.emit('gameEnd', {
       roomId,
-      result: 'surrender'
-    });
-  };
+      result: 'surrender',
+    })
+  }
 
   const handleStartGame = async () => {
     if (isHost) {
       try {
-        const character = await getRandomCharacter(gameSettings);
+        const character = await getRandomCharacter(gameSettings)
         // console.log(character);
-        const encryptedCharacter = CryptoJS.AES.encrypt(JSON.stringify(character), secret).toString();
+        const encryptedCharacter = CryptoJS.AES.encrypt(JSON.stringify(character), secret).toString()
         socket.emit('gameStart', {
           roomId,
           character: encryptedCharacter,
-          settings: gameSettings
-        });
+          settings: gameSettings,
+        })
 
         // Update local state
-        setAnswerCharacter(character);
-        setGuessesLeft(gameSettings.maxAttempts);
-        setCurrentSubjectSearch(gameSettings.subjectSearch);
+        setAnswerCharacter(character)
+        setGuessesLeft(gameSettings.maxAttempts)
+        setCurrentSubjectSearch(gameSettings.subjectSearch)
 
         // Prepare hints if enabled
-        let hintTexts = ['🚫提示未启用', '🚫提示未启用'];
+        let hintTexts = ['🚫提示未启用', '🚫提示未启用']
         if (gameSettings.enableHints && character.summary) {
-          const sentences = character.summary.split(/[。、，。！？ ""]/).filter(s => s.trim());
+          const sentences = character.summary.split(/[。、，！？ "]/).filter(s => s.trim())
           if (sentences.length > 0) {
-            const selectedIndices = new Set();
+            const selectedIndices = new Set()
             while (selectedIndices.size < Math.min(2, sentences.length)) {
-              selectedIndices.add(Math.floor(Math.random() * sentences.length));
+              selectedIndices.add(Math.floor(Math.random() * sentences.length))
             }
-            hintTexts = Array.from(selectedIndices).map(i => "……"+sentences[i].trim()+"……");
+            hintTexts = Array.from(selectedIndices).map(i => `……${sentences[i].trim()}……`)
           }
         }
         setHints({
           first: hintTexts[0],
-          second: hintTexts[1]
-        });
-        setGlobalGameEnd(false);
-        setIsGameStarted(true);
-        setGameEnd(false);
-        setGuesses([]);
-      } catch (error) {
-        console.error('Failed to initialize game:', error);
-        alert('游戏初始化失败，请重试');
+          second: hintTexts[1],
+        })
+        setGlobalGameEnd(false)
+        setIsGameStarted(true)
+        setGameEnd(false)
+        setGuesses([])
+      }
+      catch (error) {
+        console.error('Failed to initialize game:', error)
+        alert('游戏初始化失败，请重试')
       }
     }
-  };
+  }
 
   const getGenderEmoji = (gender) => {
     switch (gender) {
       case 'male':
-        return '♂️';
+        return '♂️'
       case 'female':
-        return '♀️';
+        return '♀️'
       default:
-        return '❓';
+        return '❓'
     }
-  };
+  }
 
   const handleVisibilityToggle = () => {
-    socket.emit('toggleRoomVisibility', { roomId });
-  };
+    socket.emit('toggleRoomVisibility', { roomId })
+  }
 
   if (!roomId) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>
   }
 
   return (
     <div className="multiplayer-container">
       <a
-          href="/"
-          className="social-link floating-back-button"
-          title="Back"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate('/');
-          }}
+        href="/"
+        className="social-link floating-back-button"
+        title="Back"
+        onClick={(e) => {
+          e.preventDefault()
+          navigate('/')
+        }}
       >
         <i className="fas fa-angle-left"></i>
       </a>
@@ -467,7 +478,7 @@ const Multiplayer = () => {
             type="text"
             placeholder="输入用户名"
             value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={e => setUsername(e.target.value)}
             className="username-input"
             maxLength={20}
           />
@@ -556,7 +567,10 @@ const Multiplayer = () => {
               )}
               <div className="game-info">
                 <div className="guesses-left">
-                  <span>剩余猜测次数: {guessesLeft}</span>
+                  <span>
+                    剩余猜测次数:
+                    {guessesLeft}
+                  </span>
                   <button
                     className="surrender-button"
                     onClick={handleSurrender}
@@ -566,8 +580,18 @@ const Multiplayer = () => {
                 </div>
                 {gameSettings.enableHints && hints.first && (
                   <div className="hints">
-                    {guessesLeft <= 5 && <div className="hint">提示1: {hints.first}</div>}
-                    {guessesLeft <= 2 && <div className="hint">提示2: {hints.second}</div>}
+                    {guessesLeft <= 5 && (
+                      <div className="hint">
+                        提示1:
+                        {hints.first}
+                      </div>
+                    )}
+                    {guessesLeft <= 2 && (
+                      <div className="hint">
+                        提示2:
+                        {hints.second}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -608,7 +632,17 @@ const Multiplayer = () => {
                 </div>
               )}
               <div className="game-end-message">
-                {showNames ? <>{winner}<br /></> : ''} 答案是: {answerCharacter.nameCn}
+                {showNames
+                  ? (
+                      <>
+                        {winner}
+                        <br />
+                      </>
+                    )
+                  : ''}
+                {' '}
+                答案是:
+                {answerCharacter.nameCn}
                 <button
                   className="character-details-button"
                   onClick={() => setShowCharacterPopup(true)}
@@ -676,7 +710,7 @@ const Multiplayer = () => {
 
       )}
     </div>
-  );
-};
+  )
+}
 
-export default Multiplayer;
+export default Multiplayer

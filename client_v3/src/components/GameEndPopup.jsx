@@ -1,21 +1,21 @@
-import '../styles/popups.css';
-import subaruIcon from '../assets/subaru.jpg';
-import { useState } from 'react';
-import TagContributionPopup from './TagContributionPopup';
+import { useState } from 'react'
+import subaruIcon from '../assets/subaru.jpg'
+import TagContributionPopup from './TagContributionPopup'
+import '../styles/popups.css'
 
 function GameEndPopup({ result, answer, onClose }) {
-  const [showTagPopup, setShowTagPopup] = useState(false);
+  const [showTagPopup, setShowTagPopup] = useState(false)
 
   if (showTagPopup) {
     return (
       <TagContributionPopup
         character={answer}
         onClose={() => {
-          setShowTagPopup(false);
-          onClose();
+          setShowTagPopup(false)
+          onClose()
         }}
       />
-    );
+    )
   }
 
   return (
@@ -63,7 +63,12 @@ function GameEndPopup({ result, answer, onClose }) {
                       <li key={index}>{appearance}</li>
                     ))}
                     {answer.appearances.length > 3 && (
-                      <li>...等 {answer.appearances.length} 部作品</li>
+                      <li>
+                        ...等
+                        {answer.appearances.length}
+                        {' '}
+                        部作品
+                      </li>
                     )}
                   </ul>
                 </div>
@@ -93,7 +98,7 @@ function GameEndPopup({ result, answer, onClose }) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default GameEndPopup;
+export default GameEndPopup

@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import { useState } from 'react'
 
-const PlayerList = ({ players, socket, isGameStarted, handleReadyToggle, onAnonymousModeChange }) => {
-  const [showNames, setShowNames] = useState(true);
+function PlayerList({ players, socket, isGameStarted, handleReadyToggle, onAnonymousModeChange }) {
+  const [showNames, setShowNames] = useState(true)
 
   const handleShowNamesToggle = () => {
-    const newShowNames = !showNames;
-    setShowNames(newShowNames);
+    const newShowNames = !showNames
+    setShowNames(newShowNames)
     if (onAnonymousModeChange) {
-      onAnonymousModeChange(newShowNames);
+      onAnonymousModeChange(newShowNames)
     }
-  };
+  }
 
   return (
     <div className="players-list">
@@ -18,18 +18,18 @@ const PlayerList = ({ players, socket, isGameStarted, handleReadyToggle, onAnony
           <tr>
             <th></th>
             <th>
-              <button 
-                onClick={handleShowNamesToggle} 
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
+              <button
+                onClick={handleShowNamesToggle}
+                style={{
+                  background: 'none',
+                  border: 'none',
                   cursor: 'pointer',
                   padding: '0',
                   margin: '0',
                   height: 'auto',
                   lineHeight: '1',
                   fontSize: 'inherit',
-                  outline: 'none'
+                  outline: 'none',
                 }}
               >
                 {showNames ? '名' : '无名'}
@@ -40,28 +40,35 @@ const PlayerList = ({ players, socket, isGameStarted, handleReadyToggle, onAnony
           </tr>
         </thead>
         <tbody>
-          {players.map((player) => (
+          {players.map(player => (
             <tr key={player.id}>
               <td>
-                {player.disconnected ? '已断开' : player.isHost ? (
-                  '房主'
-                ) : player.id === socket?.id && !isGameStarted ? (
-                  <button 
-                    onClick={handleReadyToggle}
-                    className={`ready-button ${player.ready ? 'ready' : ''}`}
-                  >
-                    {player.ready ? '取消准备' : '准备'}
-                  </button>
-                ) : (
-                  player.ready ? '已准备' : '未准备'
-                )}
+                {player.disconnected
+                  ? '已断开'
+                  : player.isHost
+                    ? (
+                        '房主'
+                      )
+                    : player.id === socket?.id && !isGameStarted
+                      ? (
+                          <button
+                            onClick={handleReadyToggle}
+                            className={`ready-button ${player.ready ? 'ready' : ''}`}
+                          >
+                            {player.ready ? '取消准备' : '准备'}
+                          </button>
+                        )
+                      : (
+                          player.ready ? '已准备' : '未准备'
+                        )}
               </td>
               <td>
                 <span style={{
                   backgroundColor: !showNames && player.id !== socket?.id ? '#000' : 'transparent',
                   color: !showNames && player.id !== socket?.id ? '#000' : 'inherit',
-                  padding: !showNames && player.id !== socket?.id ? '2px 4px' : '0'
-                }}>
+                  padding: !showNames && player.id !== socket?.id ? '2px 4px' : '0',
+                }}
+                >
                   {player.username}
                 </span>
               </td>
@@ -72,7 +79,7 @@ const PlayerList = ({ players, socket, isGameStarted, handleReadyToggle, onAnony
         </tbody>
       </table>
     </div>
-  );
-};
+  )
+}
 
-export default PlayerList; 
+export default PlayerList

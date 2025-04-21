@@ -1,7 +1,7 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import SinglePlayer from './pages/SinglePlayer';
-import Multiplayer from './pages/Multiplayer';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
+import Home from './pages/Home'
+import Multiplayer from './pages/Multiplayer'
+import SinglePlayer from './pages/SinglePlayer'
 
 function App() {
   return (
@@ -13,7 +13,7 @@ function App() {
         <Route path="/multiplayer/:roomId" element={<Multiplayer />} />
       </Routes>
     </Router>
-  );
+  )
 }
 
-export default App;
+export default App
